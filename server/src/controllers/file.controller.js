@@ -6,9 +6,10 @@ import {
   uploadProjectFile,
 } from "../services/file.service.js";
 import { ProjectError } from "../services/project.service.js";
+import { StorageConfigurationError } from "../config/cloudinary.js";
 
 function sendError(res, error) {
-  if (error instanceof FileServiceError || error instanceof ProjectError) {
+  if (error instanceof FileServiceError || error instanceof ProjectError || error instanceof StorageConfigurationError) {
     return res.status(error.status).json({
       success: false,
       error: {

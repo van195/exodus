@@ -6,7 +6,10 @@ import ProjectForm from "../components/dashboard/ProjectForm";
 import PaymentModal from "../components/dashboard/PaymentModal";
 import ReceiptModal from "../components/dashboard/ReceiptModal";
 import ContactModal from "../components/dashboard/ContactModal";
+import DemoWorkModal from "../components/dashboard/DemoWorkModal";
+import { canApproveDemoWork } from "../services/demoDeliverables";
 import { formatMoney } from "../utils/format";
+import { clearDemoSession, getDemoUser } from "../services/demoSession";
 import "../styles/dashboard.css";
 import "../styles/dashboard-extra.css";
 
@@ -28,7 +31,8 @@ const sum = (list) => list.reduce((total, p) => total + p.budget, 0);
 
 export default function Dashboard() {
   const store = useProjects();
-  const [role, setRole] = useState("client");
+  const [demoUser] = useState(getDemoUser);
+  const [role, setRole] = useState(() => getDemoUser()?.role || "client");
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [modal, setModal] = useState(null);
@@ -84,9 +88,8 @@ export default function Dashboard() {
     if (type === "accept") {
       store.accept(project.id);
       setToast("Project accepted. You can now contact the client.");
-    } else if (type === "deliver") {
-      store.deliver(project.id);
-      setToast("Marked as delivered. The client can now release your payment.");
+    } else if (type === "deliver" || type === "review") {
+      setModal({ type: "work", projectId: project.id });
     } else if (type === "receipt" || type === "contact") {
       setModal({ type, projectId: project.id });
     } else {
@@ -96,9 +99,16 @@ export default function Dashboard() {
 
   const confirmPayment = (details) => {
     const { type, project } = modal;
-    const receipt = store[type](project, details);
-    setToast(DONE_MESSAGE[type]);
-    setModal({ type: "receipt", projectId: project.id, receiptId: receipt.id });
+    try {
+      const receipt = type === "release"
+        ? store.release(project, modal.reviewedFileId, role)
+        : store[type](project, details);
+      setToast(DONE_MESSAGE[type]);
+      setModal({ type: "receipt", projectId: project.id, receiptId: receipt.id });
+    } catch (error) {
+      setToast(error.message);
+      setModal({ type: "work", projectId: project.id });
+    }
   };
 
   const submitRequest = (data) => {
@@ -134,15 +144,20 @@ export default function Dashboard() {
         </div>
 
         <nav className="side-nav" aria-label="Dashboard">
+          {!demoUser && <Link to="/projects">My project deliverables</Link>}
           <a href="#projects" className="active">Projects</a>
           <Link to="/">Home page</Link>
           <button type="button" onClick={() => { store.reset(); setToast("Demo data reset."); }}>Reset demo data</button>
         </nav>
 
-        <Link to="/login" className="side-logout">Log out</Link>
+        <Link to="/login" className="side-logout" onClick={clearDemoSession}>Log out</Link>
       </aside>
 
       <main className="main" id="projects">
+        <div className="demo-banner" role="status">
+          <strong>Test mode{demoUser ? ` · ${demoUser.name}` : ""}</strong>
+          <p>Changes use browser demo data. No real payments or approvals are processed.</p>
+        </div>
         <header className="top">
           <div>
             <h1>{role === "client" ? "Client dashboard" : "Developer dashboard"}</h1>
@@ -208,6 +223,18 @@ export default function Dashboard() {
       </main>
 
       {modal?.type === "new" && <ProjectForm onClose={closeModal} onSubmit={submitRequest} />}
+      {modal?.type === "work" && modalProject && (
+        <DemoWorkModal key={modalProject.id} project={modalProject} role={role} onClose={closeModal}
+          onSubmitted={(file) => {
+            store.submitWork(modalProject.id, file, role);
+            setToast("Project files uploaded. Waiting for client review and approval.");
+            setModal(null);
+          }}
+          onApprove={(fileId) => {
+            if (!canApproveDemoWork(modalProject, role, fileId)) return;
+            setModal({ type: "release", project: modalProject, reviewedFileId: fileId });
+          }} />
+      )}
       {PAYMENT_MODES.includes(modal?.type) && (
         <PaymentModal mode={modal.type} project={modal.project} onClose={closeModal} onConfirm={confirmPayment} />
       )}

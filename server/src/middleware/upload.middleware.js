@@ -1,20 +1,29 @@
-import multer from "multer";
-import { cloudinaryConfig } from "../config/cloudinary.js";
+import { cloudinaryConfig, requireFileStorage, StorageConfigurationError } from "../config/cloudinary.js";
 
-const storage = multer.memoryStorage();
+let upload;
 
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: cloudinaryConfig.maxFileSizeBytes,
-    files: 1,
-  },
-});
-
-export const singleFileUpload = (req, res, next) => {
+export const singleFileUpload = async (req, res, next) => {
+  try {
+    requireFileStorage();
+    if (!upload) {
+      const { default: multer } = await import("multer");
+      upload = multer({
+        storage: multer.memoryStorage(),
+        limits: { fileSize: cloudinaryConfig.maxFileSizeBytes, files: 1 },
+      });
+    }
+  } catch (error) {
+    if (error instanceof StorageConfigurationError || error.code === "ERR_MODULE_NOT_FOUND") {
+      return res.status(503).json({
+        success: false,
+        error: { code: "STORAGE_NOT_CONFIGURED", message: "File uploads are unavailable. Configure Cloudinary and install server dependencies." },
+      });
+    }
+    return next(error);
+  }
   upload.single("file")(req, res, (err) => {
     if (err) {
-      if (err instanceof multer.MulterError) {
+      if (err.name === "MulterError") {
         if (err.code === "LIMIT_FILE_SIZE") {
           const maxMb = Math.round(cloudinaryConfig.maxFileSizeBytes / (1024 * 1024));
           return res.status(413).json({

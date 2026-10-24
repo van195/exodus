@@ -1,10 +1,10 @@
 import { formatDate, formatMoney, isOverdue } from "../../utils/format";
 
-const STEPS = ["Posted", "Accepted", "Funded", "Delivered", "Paid"];
+const STEPS = ["Posted", "Accepted", "Funded", "Submitted", "Approved / Paid"];
 const INDEX = { open: 0, accepted: 1, funded: 2, delivered: 3, released: 4 };
 const LABEL = {
   open: "Open", accepted: "Awaiting funds", funded: "In escrow",
-  delivered: "Awaiting approval", released: "Paid", refunded: "Refunded",
+  delivered: "Awaiting review", released: "Completed / Paid", refunded: "Refunded",
 };
 
 function getActions(role, p) {
@@ -13,7 +13,7 @@ function getActions(role, p) {
   if (role === "developer") {
     if (p.status === "open") return { primary: { label: "Accept project", type: "accept" } };
     if (p.status === "accepted") return { note: "Waiting for the client to fund escrow." };
-    if (p.status === "funded") return { primary: { label: "Mark as delivered", type: "deliver" }, note: "Funds are secured. You can start building." };
+    if (p.status === "funded") return { primary: { label: "Upload completed project", type: "deliver" }, note: "Submit the project files so the client can review your work." };
     if (p.status === "delivered") return { note: "Waiting for the client to approve and release payment." };
     if (p.status === "released") return { note: `You were paid ${formatMoney(p.budget)}.`, tone: "ok" };
     return { note: "The payment was returned to the client." };
@@ -25,7 +25,7 @@ function getActions(role, p) {
     return overdue
       ? { secondary: { label: "Request refund", type: "refund" }, note: "The deadline has passed. You can ask for your money back." }
       : { note: "Your money is held safely until you approve the delivery." };
-  if (p.status === "delivered") return { primary: { label: "Approve and release payment", type: "release" }, note: "Check the work, then release the money." };
+  if (p.status === "delivered") return { primary: { label: "Review submitted project", type: "review" }, note: "Open and test the submitted files before approving completion." };
   if (p.status === "released") return { note: "Payment released to the developer.", tone: "ok" };
   return { note: "The money was returned to you.", tone: "ok" };
 }
@@ -65,8 +65,9 @@ export default function ProjectCard({ project: p, role, onAction }) {
         </ol>
       )}
 
-      {(canContact || receiptCount > 0) && (
+      {(canContact || receiptCount > 0 || p.deliverable) && (
         <div className="card-links">
+          {p.deliverable && <button type="button" onClick={() => onAction("review", p)}>View project files</button>}
           {canContact && (
             <button type="button" onClick={() => onAction("contact", p)}>
               {role === "developer" ? "Contact client" : "Message developer"}

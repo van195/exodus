@@ -98,9 +98,9 @@ function matchesMagicBytes(buffer, mimeType) {
 
 export function sanitizeFilename(filename) {
   if (typeof filename !== "string") return "uploaded_file";
-  const base = path.basename(filename).replace(/[\0\r\n]/g, "");
+  const base = path.basename(filename.replace(/\\/g, "/")).replace(/[\0\r\n]/g, "");
   // Replace non-alphanumeric (except dot, dash, underscore) with underscore
-  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/\.{2,}/g, "_");
   // Prevent hidden files (e.g. .htaccess)
   const safeName = cleaned.startsWith(".") ? `file${cleaned}` : cleaned;
   return safeName.slice(0, 200) || "uploaded_file";

@@ -67,3 +67,13 @@
   .thread { height: 200px; }
   .contact-links .btn { flex: 1; }
 }
+.demo-banner { padding: 16px; margin-bottom: 20px; border: 1px solid var(--accent); border-radius: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.demo-work, .demo-work-form, .demo-work-file { display: grid; gap: 14px; }
+.demo-work input[type="file"] { max-width: 100%; min-height: 44px; font: inherit; }
+.demo-work h4, .demo-work p { overflow-wrap: anywhere; }
+.demo-work-file img { max-width: 100%; max-height: 360px; object-fit: contain; border-radius: 12px; }
+.demo-work-file iframe { width: 100%; height: 360px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+.demo-review-check { display: flex; align-items: flex-start; gap: 12px; line-height: 1.5; }
+.demo-review-check input { margin-top: 5px; flex-shrink: 0; }
+.demo-work button:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 560px) { .demo-work .modal-actions { flex-wrap: wrap; } .demo-work .btn { width: 100%; } }

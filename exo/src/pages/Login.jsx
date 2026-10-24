@@ -3,6 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { Field, PasswordField, SubmitButton } from "../components/Field";
 import { isEmail } from "../utils/validators";
+import { apiRequest, saveToken } from "../services/api";
+import DemoAccess from "../components/DemoAccess";
+import { clearDemoSession } from "../services/demoSession";
 
 const validate = (v) => {
   const e = {};
@@ -35,11 +38,18 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // TODO: replace with the real login API call
-      await new Promise((r) => setTimeout(r, 900));
+      const data = await apiRequest("/auth/login", {
+        token: null,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email.trim(), password: values.password }),
+      });
+      if (!data?.token) throw new Error("The server did not return a login session.");
+      saveToken(data.token, values.remember);
+      clearDemoSession();
       navigate("/dashboard");
-    } catch {
-      setFormError("We couldn't log you in. Check your email and password, then try again.");
+    } catch (error) {
+      setFormError(error.message || "We couldn't log you in. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,6 +61,7 @@ export default function Login() {
       subtitle="Log in to manage your projects and payments."
       footer={<>New here? <Link to="/register">Create an account</Link></>}
     >
+      <DemoAccess />
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <Field
           label="Email"

@@ -9,6 +9,7 @@ import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./components/Dashboard";
+import ProjectDeliverables from "./pages/ProjectDeliverables";
 import "./App.css";
 
 function Home() {
@@ -35,6 +36,8 @@ export default function App() {
       <Route path="/register" element={<Register />} />
 
 <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/projects" element={<ProjectDeliverables />} />
+      <Route path="/projects/:projectId" element={<ProjectDeliverables />} />
     </Routes>
   );
 }

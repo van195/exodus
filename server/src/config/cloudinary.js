@@ -1,20 +1,30 @@
 import "dotenv/config";
-import { v2 as cloudinary } from "cloudinary";
 
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
 const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-if (!cloudName) {
-  throw new Error("CLOUDINARY_CLOUD_NAME must be configured");
+// File storage is optional at startup; authentication and project routes can
+// run before storage credentials are provisioned.
+let cloudinary = null;
+if (cloudName && apiKey && apiSecret) {
+  try {
+    ({ v2: cloudinary } = await import("cloudinary"));
+  } catch (error) {
+    if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
+  }
 }
 
-if (!apiKey) {
-  throw new Error("CLOUDINARY_API_KEY must be configured");
+export class StorageConfigurationError extends Error {
+  constructor() {
+    super("File storage is unavailable. Configure Cloudinary credentials and install server dependencies.");
+    this.status = 503;
+    this.code = "STORAGE_NOT_CONFIGURED";
+  }
 }
 
-if (!apiSecret) {
-  throw new Error("CLOUDINARY_API_SECRET must be configured");
+export function requireFileStorage() {
+  if (!cloudinary) throw new StorageConfigurationError();
 }
 
 const maxFileSizeBytes = Number(process.env.MAX_FILE_SIZE_BYTES || 10 * 1024 * 1024);
@@ -27,7 +37,7 @@ if (!Number.isFinite(maxFileSizeBytes) || maxFileSizeBytes <= 0) {
 // that disallows authenticated delivery, CLOUDINARY_DELIVERY_TYPE can be configured in .env.
 const deliveryType = process.env.CLOUDINARY_DELIVERY_TYPE || "authenticated";
 
-cloudinary.config({
+cloudinary?.config({
   cloud_name: cloudName,
   api_key: apiKey,
   api_secret: apiSecret,

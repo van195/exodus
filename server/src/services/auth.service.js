@@ -57,11 +57,11 @@ export async function registerUser(input) {
     return { token: generateToken(user), user: toSafeUser(user) };
   } catch (error) {
     if (error instanceof AuthError) throw error;
-    if (error?.code === "23505") {
+    if ((error?.cause?.code || error?.code) === "23505") {
       throw new AuthError("An account with this email already exists.", 409, "EMAIL_ALREADY_REGISTERED");
     }
     console.error("Registration database operation failed", {
-      code: typeof error?.code === "string" ? error.code : null,
+      code: error?.cause?.code || error?.code || null,
     });
     throw new AuthError("Registration could not be completed.", 500, "REGISTRATION_FAILED");
   }
@@ -76,7 +76,7 @@ export async function loginUser(input) {
     }).from(users).where(eq(users.email, input.email)).limit(1);
   } catch (error) {
     console.error("Login database operation failed", {
-      code: typeof error?.code === "string" ? error.code : null,
+      code: error?.cause?.code || error?.code || null,
     });
     throw new AuthError("Login could not be completed.", 500, "LOGIN_FAILED");
   }
@@ -95,7 +95,7 @@ export async function getCurrentUser(userId) {
     return user ? toSafeUser(user) : null;
   } catch (error) {
     console.error("Current-user database operation failed", {
-      code: typeof error?.code === "string" ? error.code : null,
+      code: error?.cause?.code || error?.code || null,
     });
     throw new AuthError("Could not retrieve the current user.", 500, "CURRENT_USER_FAILED");
   }

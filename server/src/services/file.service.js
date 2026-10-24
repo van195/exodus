@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { files } from "../db/schema.js";
-import { cloudinaryConfig } from "../config/cloudinary.js";
+import { cloudinaryConfig, requireFileStorage } from "../config/cloudinary.js";
 import {
   deleteCloudinaryAsset,
   generateSecureAccessUrl,
@@ -32,6 +32,7 @@ export async function uploadProjectFile({
 }) {
   // 1. Verify project membership and category upload permissions
   await verifyProjectAccess(projectId, uploaderId, userRole, category);
+  requireFileStorage();
 
   // 2. Validate file integrity, size, MIME type, and magic bytes
   const validation = validateUploadedFile(file, category);
@@ -194,6 +195,8 @@ export async function deleteProjectFile(fileId, userId, userRole) {
       "FORBIDDEN"
     );
   }
+
+  requireFileStorage();
 
   // Delete from Cloudinary
   try {

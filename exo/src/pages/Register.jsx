@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "../components/AuthLayout";
 import { Field, PasswordField, SubmitButton } from "../components/Field";
 import { isEmail, passwordScore } from "../utils/validators";
+import { apiRequest } from "../services/api";
+import DemoAccess from "../components/DemoAccess";
 
 const ROLES = [
   { value: "developer", title: "Developer", text: "I build software and get paid" },
@@ -15,7 +17,11 @@ const validate = (v) => {
   if (!v.fullName.trim()) e.fullName = "Enter your full name.";
   if (!v.email.trim()) e.email = "Enter your email address.";
   else if (!isEmail(v.email)) e.email = "Enter a valid email, like name@example.com.";
-  if (v.password.length < 8) e.password = "Use at least 8 characters.";
+  if (v.password.length < 12 || !/[a-z]/.test(v.password) || !/[A-Z]/.test(v.password)
+      || !/\d/.test(v.password) || !/[^A-Za-z0-9]/.test(v.password)
+      || new TextEncoder().encode(v.password).length > 72) {
+    e.password = "Use 12 or more characters with uppercase, lowercase, a number, and a symbol (maximum 72 UTF-8 bytes).";
+  }
   if (!v.confirm) e.confirm = "Re-enter your password.";
   else if (v.confirm !== v.password) e.confirm = "The passwords don't match.";
   if (!v.terms) e.terms = "Accept the terms to continue.";
@@ -49,11 +55,19 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // TODO: replace with the real register API call
-      await new Promise((r) => setTimeout(r, 1000));
+      await apiRequest("/auth/register", {
+        token: null,
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: values.fullName.trim(), email: values.email.trim(),
+          password: values.password, confirmPassword: values.confirm,
+          role: values.role === "developer" ? "FREELANCER" : "CLIENT",
+        }),
+      });
       navigate("/login");
-    } catch {
-      setFormError("We couldn't create your account. Try again in a moment.");
+    } catch (error) {
+      setFormError(error.message || "We couldn't create your account. Try again in a moment.");
     } finally {
       setLoading(false);
     }
@@ -65,6 +79,7 @@ export default function Register() {
       subtitle="Join as a developer or a client. It takes a minute."
       footer={<>Already have an account? <Link to="/login">Log in</Link></>}
     >
+      <DemoAccess register />
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
         <fieldset className="roles">
           <legend>I am a</legend>
@@ -85,7 +100,7 @@ export default function Register() {
 
         <div className="auth-two">
           <PasswordField label="Password" name="password" autoComplete="new-password"
-                         placeholder="At least 8 characters" value={values.password}
+                         placeholder="At least 12 characters" value={values.password}
                          onChange={handleChange} error={errors.password}>
             {values.password && (
               <div className="meter" data-score={score} aria-live="polite">

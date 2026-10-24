@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { canApproveDemoWork, canUploadDemoWork } from "../services/demoDeliverables";
 
 // Demo storage: everything lives in the browser (localStorage).
 // Replace the functions below with real API calls when the backend is ready.
@@ -118,9 +119,21 @@ export function useProjects() {
         ...list,
       ]),
     accept: (id) => patch(id, { status: "accepted", developerId: "me", developerName: "You" }),
-    deliver: (id) => patch(id, { status: "delivered" }),
+    submitWork: (id, deliverable, role) => {
+      const project = projects.find((item) => item.id === id);
+      if (!canUploadDemoWork(project, role) || deliverable.projectId !== id) {
+        throw new Error("This project is no longer available for submission. Refresh and try again.");
+      }
+      patch(id, { status: "delivered", deliverable });
+    },
     fund: (project, details) => pay(project, "funded", "fund", details),
-    release: (project) => pay(project, "released", "release", { method: "Escrow release" }),
+    release: (project, reviewedFileId, role) => {
+      const current = projects.find((item) => item.id === project.id);
+      if (!canApproveDemoWork(current, role, reviewedFileId)) {
+        throw new Error("Review the current submitted file before approving this project.");
+      }
+      return pay(current, "released", "release", { method: "Escrow release", reviewedFileId });
+    },
     refund: (project) =>
       pay(project, "refunded", "refund", {
         method: (project.receipts || []).find((r) => r.type === "fund")?.method || "Original payment method",

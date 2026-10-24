@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import path from "node:path";
-import { cloudinary, cloudinaryConfig } from "../config/cloudinary.js";
+import { cloudinary, cloudinaryConfig, requireFileStorage } from "../config/cloudinary.js";
 
 /**
  * Upload a memory buffer to Cloudinary using streaming.
@@ -12,6 +12,7 @@ export function uploadBufferStream(buffer, {
   deliveryType = cloudinaryConfig.deliveryType,
   originalFilename = "file",
 } = {}) {
+  requireFileStorage();
   return new Promise((resolve, reject) => {
     // Generate an unguessable public_id server-side to prevent user control over public_id
     const safeBase = path.parse(originalFilename).name.slice(0, 50);
@@ -46,6 +47,7 @@ export function uploadBufferStream(buffer, {
  * Delete asset from Cloudinary.
  */
 export async function deleteCloudinaryAsset(publicId, resourceType = "raw", deliveryType = cloudinaryConfig.deliveryType) {
+  requireFileStorage();
   try {
     const result = await cloudinary.uploader.destroy(publicId, {
       resource_type: resourceType,
@@ -72,6 +74,7 @@ export function generateSecureAccessUrl({
   originalFilename = "",
   expiresInSeconds = 3600,
 }) {
+  requireFileStorage();
   const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
   const ext = path.extname(originalFilename).replace(/^\./, "");
 

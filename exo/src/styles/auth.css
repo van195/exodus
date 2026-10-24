@@ -210,4 +210,10 @@
   caret-color: #fff;
   -webkit-box-shadow: 0 0 0 1000px #0c1410 inset;
   transition: background-color 9999s ease-in-out 0s;
-}
+}.demo-access { padding: 18px; margin: 0 0 24px; border: 1px solid #4cc2a6; border-radius: 14px; background: rgba(76,194,166,.07); }
+.demo-access h2 { font-size: 1.05rem; margin-bottom: 8px; }
+.demo-access p { font-size: .88rem; line-height: 1.5; margin-bottom: 12px; }
+.demo-toggle { min-height: 44px; padding: 10px 16px; border: 1px solid #4cc2a6; border-radius: 8px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.demo-access .auth-form { margin-top: 16px; }
+.demo-role { display: flex; flex-wrap: wrap; gap: 18px; padding: 12px; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; }
+.demo-role label { display: flex; align-items: center; gap: 8px; }
