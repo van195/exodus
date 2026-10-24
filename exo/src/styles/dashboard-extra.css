@@ -1,0 +1,69 @@
+/* Extra styles for receipts and contact. Loaded after dashboard.css */
+
+.card-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.card-links button {
+  min-height: 34px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px;
+  background: transparent; font-size: .82rem; cursor: pointer; transition: border-color .2s, background .2s;
+}
+.card-links button:hover { border-color: var(--accent); background: rgba(76,194,166,.1); }
+
+/* Receipt */
+.receipt-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.receipt-tabs button {
+  min-height: 36px; padding: 0 14px; border: 1px solid var(--line); border-radius: 999px;
+  background: transparent; font-size: .85rem; cursor: pointer;
+}
+.receipt-tabs button.on { border-color: var(--accent); background: rgba(76,194,166,.14); }
+.receipt-sheet { padding: 22px; border: 1px dashed rgba(255,255,255,.28); border-radius: 18px; background: rgba(255,255,255,.03); display: grid; gap: 16px; }
+.receipt-top { display: flex; align-items: center; gap: 14px; }
+.receipt-top div { display: grid; gap: 2px; }
+.receipt-top span:not(.receipt-check) { color: var(--muted); font-size: .85rem; }
+.receipt-check { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--grad); color: #04110c; font-weight: 800; }
+.receipt-amount { font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+.receipt-rows { display: grid; gap: 10px; padding-top: 14px; border-top: 1px dashed rgba(255,255,255,.2); }
+.receipt-rows div { display: flex; justify-content: space-between; gap: 16px; font-size: .9rem; }
+.receipt-rows dt { color: var(--muted); }
+.receipt-rows dd { text-align: right; font-weight: 500; word-break: break-word; }
+.receipt-foot { color: var(--muted); font-size: .78rem; text-align: center; }
+
+/* Contact */
+.person { display: flex; align-items: center; gap: 14px; }
+.person-avatar { width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--grad); color: #04110c; font-weight: 800; font-size: 1.1rem; }
+.person-info { display: grid; gap: 3px; min-width: 0; }
+.person-info span { color: var(--muted); font-size: .85rem; }
+.contact-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.contact-links .btn { min-height: 40px; padding: 0 16px; font-size: .88rem; }
+
+.thread {
+  display: flex; flex-direction: column; gap: 10px; height: 240px; overflow-y: auto; padding: 14px;
+  border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.025);
+}
+.thread-empty { margin: auto; max-width: 30ch; text-align: center; color: var(--muted); font-size: .88rem; line-height: 1.5; }
+.bubble { max-width: 82%; padding: 10px 14px; border-radius: 16px 16px 16px 4px; background: rgba(255,255,255,.08); align-self: flex-start; }
+.bubble p { font-size: .92rem; line-height: 1.45; overflow-wrap: anywhere; }
+.bubble time { display: block; margin-top: 4px; color: var(--muted); font-size: .7rem; }
+.bubble--me { align-self: flex-end; border-radius: 16px 16px 4px 16px; background: rgba(76,194,166,.2); }
+.composer { display: flex; gap: 10px; }
+.composer input {
+  flex: 1; min-width: 0; min-height: 46px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px;
+  background: rgba(255,255,255,.04); color: var(--text); font: inherit; font-size: .95rem;
+}
+.composer input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(76,194,166,.25); }
+
+/* Print only the receipt */
+@media print {
+  body * { visibility: hidden !important; }
+  .receipt-sheet, .receipt-sheet * { visibility: visible !important; }
+  .modal { overflow: visible !important; max-height: none !important; box-shadow: none !important; }
+  .receipt-sheet {
+    position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: min(520px, 100%);
+    padding: 32px; background: #fff !important; border: 1px solid #bbb !important;
+  }
+  .receipt-sheet * { color: #000 !important; border-color: #ccc !important; }
+  .receipt-check { background: #ddd !important; }
+  .no-print { display: none !important; }
+}
+@media (max-width: 560px) {
+  .thread { height: 200px; }
+  .contact-links .btn { flex: 1; }
+}
