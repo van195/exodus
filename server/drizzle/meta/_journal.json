@@ -43,6 +43,13 @@
       "when": 1792837000000,
       "tag": "0005_add_projects_and_files",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792838000000,
+      "tag": "0006_chapa_payments_and_escrow",
+      "breakpoints": true
     }
   ]
 }

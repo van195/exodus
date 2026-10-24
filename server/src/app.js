@@ -3,15 +3,27 @@ import cors from "cors";
 import authRoutes from "./routes/auth.routes.js";
 import projectRoutes from "./routes/project.routes.js";
 import fileRoutes from "./routes/file.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
+import payoutRoutes from "./routes/payout.routes.js";
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+
+// Retain raw request buffer for HMAC SHA-256 webhook signature verification
+app.use(
+  express.json({
+    verify: (req, _res, buf) => {
+      req.rawBody = buf;
+    },
+  })
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/files", fileRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/payouts", payoutRoutes);
 
 app.get("/", (req, res) => {
   res.json({
