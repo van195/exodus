@@ -1,12 +1,15 @@
 
 import express from "express";
 import cors from "cors";
-import { supabase } from "./config/supabase.js";
+import { db } from "./db/index.js";
+import { profiles } from "./db/schema.js";
+import authRoutes from "./routes/auth.routes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -14,31 +17,22 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/test-supabase", async (req, res) => {
+const testSupabase = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .limit(1);
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        message: error.message
-      });
-    }
+    await db.select({ id: profiles.id }).from(profiles).limit(1);
 
     res.json({
       success: true,
-      message: "Supabase connection is working",
-      data
+      message: "Database connection is working"
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: "Database connection failed"
     });
   }
-});
+};
+
+app.get(["/api/test-supabase", "/api/test-supabas"], testSupabase);
 
 export default app;
