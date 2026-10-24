@@ -34,6 +34,14 @@ function toSafeUser(user) {
   };
 }
 
+function generateToken(user) {
+  return jwt.sign(
+    { role: user.role },
+    authConfig.jwtSecret,
+    { algorithm: "HS256", subject: user.id, expiresIn: authConfig.jwtExpiresIn },
+  );
+}
+
 export async function registerUser(input) {
   const passwordHash = await bcrypt.hash(input.password, authConfig.bcryptRounds);
   try {
@@ -46,7 +54,7 @@ export async function registerUser(input) {
     }).onConflictDoNothing({ target: users.email }).returning(safeUserFields);
 
     if (!user) throw new AuthError("An account with this email already exists.", 409, "EMAIL_ALREADY_REGISTERED");
-    return toSafeUser(user);
+    return { token: generateToken(user), user: toSafeUser(user) };
   } catch (error) {
     if (error instanceof AuthError) throw error;
     if (error?.code === "23505") {
@@ -78,12 +86,7 @@ export async function loginUser(input) {
     throw new AuthError("Invalid email or password.", 401, "INVALID_CREDENTIALS");
   }
 
-  const token = jwt.sign(
-    { role: user.role },
-    authConfig.jwtSecret,
-    { algorithm: "HS256", subject: user.id, expiresIn: authConfig.jwtExpiresIn },
-  );
-  return { token, user: toSafeUser(user) };
+  return { token: generateToken(user), user: toSafeUser(user) };
 }
 
 export async function getCurrentUser(userId) {

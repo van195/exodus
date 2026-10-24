@@ -1,15 +1,17 @@
-
 import express from "express";
 import cors from "cors";
-import { db } from "./db/index.js";
-import { profiles } from "./db/schema.js";
 import authRoutes from "./routes/auth.routes.js";
+import projectRoutes from "./routes/project.routes.js";
+import fileRoutes from "./routes/file.routes.js";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/files", fileRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -17,22 +19,11 @@ app.get("/", (req, res) => {
   });
 });
 
-const testSupabase = async (req, res) => {
-  try {
-    await db.select({ id: profiles.id }).from(profiles).limit(1);
-
-    res.json({
-      success: true,
-      message: "Database connection is working"
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Database connection failed"
-    });
-  }
-};
-
-app.get(["/api/test-supabase", "/api/test-supabas"], testSupabase);
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString()
+  });
+});
 
 export default app;
