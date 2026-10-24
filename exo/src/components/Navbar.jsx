@@ -1,4 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function Logo() {
   return (
@@ -23,9 +24,9 @@ export default function Navbar() {
         <a href="#why-fundocs">Why FunDocs</a>
         <a href="#contact">Contact</a>
       </nav>
-      <a href="#contact" className="join-button">
+      <Link to="/login" className="join-button">
         <span>Join</span><span className="join-arrow"><ArrowUpRight size={20} /></span>
-      </a>
+      </Link>
     </header>
   );
 }
