@@ -29,8 +29,8 @@ export async function register(req, res) {
   }
 
   try {
-    const user = await registerUser(value);
-    return res.status(201).json({ success: true, message: "Registration successful", data: { user } });
+    const result = await registerUser(value);
+    return res.status(201).json({ success: true, message: "Registration successful", data: result });
   } catch (error) {
     return sendError(res, error);
   }
