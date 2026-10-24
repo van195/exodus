@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer className="footer" id="contact">
       <div className="footer-main">
-        <a href="#home" className="footer-brand"><span className="footer-symbol">F.</span><span>FunDocs</span></a>
+        <a href="#home" className="footer-brand"><span className="footer-symbol">Æ.</span><span>Exodus</span></a>
         <p>Learn with purpose.<br />Remember what matters.</p>
         <a href="mailto:hello@fundocs.com" className="footer-contact">Get in touch <ArrowUpRight size={17} /></a>
       </div>
