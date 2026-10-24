@@ -22,6 +22,7 @@ export default function Navbar() {
         <a href="#how-it-works">Service</a>
         <a href="#mission">Mission</a>
         <a href="#why-fundocs">Why FunDocs</a>
+        <Link to="/dashboard">Dashboard</Link>
         <a href="#contact">Contact</a>
       </nav>
       <Link to="/login" className="join-button">
