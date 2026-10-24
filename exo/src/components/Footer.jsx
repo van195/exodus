@@ -9,7 +9,7 @@ export default function Footer() {
         <a href="mailto:hello@fundocs.com" className="footer-contact">Get in touch <ArrowUpRight size={17} /></a>
       </div>
       <div className="footer-bottom">
-        <span>© {new Date().getFullYear()} FunDocs</span><span>BUILT FOR CURIOUS MINDS.</span><a href="#home">BACK TO TOP ↑</a>
+        <span>© {new Date().getFullYear()} FunDocs</span><span>BUILT FOR MIND .</span><a href="#home">BACK TO TOP ↑</a>
       </div>
     </footer>
   );

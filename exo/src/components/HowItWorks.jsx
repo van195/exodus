@@ -11,7 +11,7 @@ export default function HowItWorks() {
     <section className="how section-pad" id="how-it-works">
       <div className="section-label"><span className="label-dot" />HOW IT WORKS</div>
       <div className="how-heading">
-        <h2>From curious<br />to <span className="accent-text">confident.</span></h2>
+        <h2><br />to <span className="accent-text">confident.</span></h2>
         <p>Three steps. One better learning experience.</p>
       </div>
       <div className="steps-list">

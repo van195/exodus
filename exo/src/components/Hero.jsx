@@ -18,8 +18,8 @@ export default function Hero() {
       </svg>
       <div className="hero-content">
         <p className="eyebrow hero-eyebrow">LEARN DIFFERENTLY. REMEMBER MORE.</p>
-        <h1>Built For real-time learning</h1>
-        <p className="hero-description">A smarter way to learn, understand, and remember what matters.</p>
+        <h1>Built For real-time protection</h1>
+        <p className="hero-description"> Bring clarity to every project with transparent payment terms, milestones, and a process designed to build trust..</p>
         <a href="#how-it-works" className="primary-button">Get free trial</a>
         <span className="hero-caption">#first chose</span>
       </div>
