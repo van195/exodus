@@ -403,3 +403,145 @@ All error responses return consistent JSON:
 | `404` | `FILE_NOT_FOUND` | File ID does not exist |
 | `413` | `FILE_TOO_LARGE` | Upload exceeds maximum size (10 MB) |
 | `429` | `UPLOAD_RATE_LIMITED` | Too many uploads from this IP |
+
+---
+
+## 7. Chapa Escrow Payment Routes (`/api/payments`)
+
+### `POST /api/payments/initialize`
+Client initializes escrow funding via Chapa checkout.
+* **Authentication**: `Bearer <CLIENT_TOKEN>`
+* **Content-Type**: `application/json`
+* **Request Body**:
+```json
+{
+  "projectId": "b1e2c3d4-..."
+}
+```
+*Note: Amount and currency are securely retrieved from the trusted database project record.*
+
+* **Response `200 OK`**:
+```json
+{
+  "success": true,
+  "message": "Checkout initialized successfully.",
+  "data": {
+    "paymentId": "5fa8c21a-...",
+    "txRef": "TP-TX-b1e2c3d4-1729768000000-a1b2c3",
+    "amount": "2500.00",
+    "currency": "ETB",
+    "checkoutUrl": "https://checkout.chapa.co/checkout/payment/...",
+    "isReused": false
+  }
+}
+```
+
+---
+
+### `GET /api/payments/verify/:txRef` (or `GET /api/payments/:paymentId/verify`)
+Verifies payment status directly server-to-server with Chapa.
+* **Authentication**: `Bearer <JWT_TOKEN>` (Must be project member or admin)
+* **Response `200 OK`**:
+```json
+{
+  "success": true,
+  "message": "Payment verified successfully. Project escrow is funded.",
+  "data": {
+    "id": "5fa8c21a-...",
+    "projectId": "b1e2c3d4-...",
+    "txRef": "TP-TX-b1e2c3d4-1729768000000-a1b2c3",
+    "amount": "2500.00",
+    "currency": "ETB",
+    "status": "SUCCESSFUL",
+    "paymentMethod": "telebirr",
+    "verifiedAt": "2026-10-24T12:15:00.000Z"
+  }
+}
+```
+
+---
+
+### `POST /api/payments/webhook`
+Chapa incoming webhook endpoint.
+* **Authentication**: Cryptographic `x-chapa-signature` (HMAC SHA-256)
+* **Response `200 OK`**:
+```json
+{
+  "isValid": true,
+  "statusCode": 200,
+  "message": "Webhook processed successfully.",
+  "duplicate": false
+}
+```
+
+---
+
+### `GET /api/payments/banks`
+List all supported Ethiopian banks for freelancer payouts.
+* **Authentication**: `Bearer <JWT_TOKEN>`
+* **Response `200 OK`**:
+```json
+{
+  "success": true,
+  "data": {
+    "banks": [
+      { "id": "856", "name": "Commercial Bank of Ethiopia", "code": "CBE" },
+      { "id": "947", "name": "Bank of Abyssinia", "code": "BOA" },
+      { "id": "853", "name": "Telebirr", "code": "TELEBIRR" }
+    ]
+  }
+}
+```
+
+---
+
+## 8. Escrow Lifecycle & Deliverable Acceptance (`/api/projects/:projectId`)
+
+| Method | Endpoint | Permitted Role | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/projects/:id/accept-agreement` | Client / Freelancer | Accept contract (`DRAFT` → `AWAITING_PAYMENT`) |
+| `POST` | `/api/projects/:id/submit-deliverable` | Freelancer | Submit work for review (`FUNDED` → `CLIENT_REVIEW`) |
+| `POST` | `/api/projects/:id/accept-deliverable` | Client | Approve work & authorize fund release (`CLIENT_REVIEW` → `RELEASE_APPROVED`) |
+| `POST` | `/api/projects/:id/request-revision` | Client | Request revision with reason (`CLIENT_REVIEW` → `REVISION_REQUESTED`) |
+| `POST` | `/api/projects/:id/dispute` | Client / Freelancer | Open dispute, freezing funds and payouts (`*` → `DISPUTED`) |
+| `GET` | `/api/projects/:id/activities` | Project Members | View chronological audit timeline of all escrow events |
+
+---
+
+## 9. Freelancer Payout Routes (`/api/payouts`)
+
+### `POST /api/payouts/profile`
+Freelancer configures bank account for receiving payouts.
+* **Authentication**: `Bearer <FREELANCER_TOKEN>`
+* **Request Body**:
+```json
+{
+  "bankCode": "856",
+  "bankName": "Commercial Bank of Ethiopia",
+  "accountNumber": "1000123456789",
+  "accountName": "Abebe Kebede"
+}
+```
+
+### `POST /api/payouts/project/:projectId`
+Initiate release payout to freelancer via Chapa Transfers API.
+* **Authentication**: `Bearer <JWT_TOKEN>` (Must be project member or admin)
+* **Pre-condition**: Project must be in `RELEASE_APPROVED` state.
+* **Response `200 OK`**:
+```json
+{
+  "success": true,
+  "message": "Payout completed successfully.",
+  "data": {
+    "payout": {
+      "id": "e3a1...",
+      "reference": "TP-PO-b1e2c3d4-...",
+      "amount": "2500.00",
+      "currency": "ETB",
+      "status": "SUCCESSFUL"
+    },
+    "projectStatus": "PAID_OUT"
+  }
+}
+```
+
